@@ -1,0 +1,55 @@
+// Schema para Sistema de Gerenciamento de Pedidos - Barraca 20.210
+// Evento São João - IFMS
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Drink {
+  id          String   @id @default(cuid())
+  nome        String
+  descricao   String?
+  imagem      String?
+  ativo       Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relacionamento com itens do pedido
+  itensPedido ItemPedido[]
+  
+  @@map("drinks")
+}
+
+model Pedido {
+  id          String   @id @default(cuid())
+  nomeCliente String
+  total       Float
+  status      String   @default("aguardando_pagamento") // aguardando_pagamento, ficha_entregue, em_preparo, pronto, entregue
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relacionamento com itens do pedido
+  itens       ItemPedido[]
+  
+  @@map("pedidos")
+}
+
+model ItemPedido {
+  id         String @id @default(cuid())
+  pedidoId   String
+  drinkId    String
+  volume     Int    // 300, 500, 700 (ml)
+  quantidade Int    @default(1)
+  preco      Float  // R$ 8, 10, 14
+  
+  // Relacionamentos
+  pedido     Pedido @relation(fields: [pedidoId], references: [id], onDelete: Cascade)
+  drink      Drink  @relation(fields: [drinkId], references: [id])
+  
+  @@map("itens_pedido")
+}
