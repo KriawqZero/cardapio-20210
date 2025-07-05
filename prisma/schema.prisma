@@ -16,6 +16,9 @@ model Drink {
   descricao   String?
   imagem      String?
   ativo       Boolean  @default(true)
+  esgotado    Boolean  @default(false)
+  esgotando   Boolean  @default(false)
+  novidade    Boolean  @default(false)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   

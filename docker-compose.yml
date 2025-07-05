@@ -1,0 +1,28 @@
+services:
+  # Aplicação Next.js
+  app:
+    container_name: cardapio_20210
+    build: .
+    environment:
+      DATABASE_URL: "mysql://cardapio_20210:cardapio_20210@103.199.185.62:3306/cardapio_20210"
+      NODE_ENV: production
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
+    command: >
+      sh -c "
+        yarn db:push &&
+        yarn start
+      "
+    networks:
+      - nginx
+      - shared_network
+
+volumes:
+  mysql_data:
+
+networks:
+  nginx:
+    driver: bridge
+  shared_network:
+    external: true

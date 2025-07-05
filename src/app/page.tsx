@@ -19,16 +19,6 @@ export default function Home() {
         
         <ClientOrderForm />
         
-        {/* Link para admin */}
-        <div className="fixed bottom-4 right-4">
-          <a 
-            href="/admin" 
-            className="bg-gray-900 hover:bg-gray-800 text-white p-3 rounded-full shadow-lg transition-colors flex items-center justify-center"
-            title="Painel Administrativo"
-          >
-            <Settings className="w-5 h-5" />
-          </a>
-        </div>
       </div>
     </div>
   );

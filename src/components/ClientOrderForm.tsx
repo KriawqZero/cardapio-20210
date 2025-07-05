@@ -10,6 +10,9 @@ type Drink = {
   descricao?: string;
   imagem?: string;
   ativo: boolean;
+  esgotado?: boolean;
+  esgotando?: boolean;
+  novidade?: boolean;
 };
 
 type PedidoItem = {
@@ -197,38 +200,120 @@ export default function ClientOrderForm() {
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {drinks.map((drink) => (
-              <div key={drink.id} className="border-2 border-gray-200 rounded-lg p-4 hover:border-blue-300 transition-colors">
-                <div className="flex items-center gap-3 mb-3">
-                  <Coffee className="w-8 h-8 text-blue-500" />
-                  <div>
-                    <h4 className="font-bold text-gray-800">{drink.nome}</h4>
-                    {drink.descricao && (
-                      <p className="text-sm text-gray-600">{drink.descricao}</p>
-                    )}
+            {drinks.filter(drink => drink.ativo).map((drink) => {
+              const isEsgotado = drink.esgotado;
+              const isEsgotando = drink.esgotando;
+              const isNovidade = drink.novidade;
+              
+              return (
+                <div key={drink.id} className={`border-2 rounded-lg p-4 transition-colors relative ${
+                  isEsgotado 
+                    ? 'border-red-200 bg-red-50' 
+                    : isEsgotando
+                      ? 'border-yellow-300 bg-yellow-50 hover:border-yellow-400'
+                      : isNovidade 
+                        ? 'border-blue-300 bg-blue-50 hover:border-blue-400' 
+                        : 'border-gray-200 hover:border-blue-300'
+                }`}>
+                  {/* Badge de Status */}
+                  {isEsgotado && (
+                    <div className="absolute top-2 right-2 bg-red-500 text-white px-2 py-1 text-xs rounded-full font-bold">
+                      ESGOTADO
+                    </div>
+                  )}
+                  {isEsgotando && !isEsgotado && (
+                    <div className="absolute top-2 right-2 bg-yellow-500 text-white px-2 py-1 text-xs rounded-full font-bold">
+                      ESGOTANDO
+                    </div>
+                  )}
+                  {isNovidade && !isEsgotado && !isEsgotando && (
+                    <div className="absolute top-2 right-2 bg-blue-500 text-white px-2 py-1 text-xs rounded-full font-bold animate-pulse">
+                      NOVIDADE
+                    </div>
+                  )}
+                  
+                  <div className="flex items-center gap-3 mb-3">
+                    <Coffee className={`w-8 h-8 ${
+                      isEsgotado ? 'text-red-400' : isEsgotando ? 'text-yellow-500' : isNovidade ? 'text-blue-500' : 'text-blue-500'
+                    }`} />
+                    <div>
+                      <h4 className={`font-bold ${
+                        isEsgotado ? 'text-red-600' : isEsgotando ? 'text-yellow-700' : isNovidade ? 'text-blue-800' : 'text-gray-800'
+                      }`}>
+                        {drink.nome}
+                        {isNovidade && !isEsgotado && !isEsgotando && (
+                          <span className="ml-2 text-blue-500 text-sm">✨</span>
+                        )}
+                        {isEsgotando && !isEsgotado && (
+                          <span className="ml-2 text-yellow-500 text-sm">⚠️</span>
+                        )}
+                      </h4>
+                      {drink.descricao && (
+                        <p className={`text-sm ${
+                          isEsgotado ? 'text-red-500' : isEsgotando ? 'text-yellow-600' : 'text-gray-600'
+                        }`}>
+                          {drink.descricao}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-3 gap-2">
+                    {VOLUMES.map((volume) => (
+                      <button
+                        key={volume.value}
+                        type="button"
+                        onClick={() => !isEsgotado && addItem(drink, volume.value)}
+                        disabled={isEsgotado}
+                        className={`flex flex-col items-center gap-1 p-3 rounded-lg transition-colors border-2 tablet-btn ${
+                          isEsgotado
+                            ? 'bg-red-100 border-red-200 text-red-400 cursor-not-allowed opacity-50'
+                            : isEsgotando
+                              ? 'bg-yellow-100 hover:bg-yellow-200 border-transparent hover:border-yellow-300 text-yellow-700'
+                              : isNovidade
+                                ? 'bg-blue-100 hover:bg-blue-200 border-transparent hover:border-blue-300 text-blue-700'
+                                : 'bg-gray-50 hover:bg-blue-50 border-transparent hover:border-blue-300'
+                        }`}
+                      >
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                          isEsgotado
+                            ? 'bg-red-200'
+                            : isEsgotando
+                              ? 'bg-yellow-200'
+                              : isNovidade
+                                ? 'bg-blue-200'
+                                : 'bg-blue-100'
+                        }`}>
+                          <span className={`font-bold ${
+                            isEsgotado
+                              ? 'text-red-500'
+                              : isEsgotando
+                                ? 'text-yellow-700'
+                                : isNovidade
+                                  ? 'text-blue-700'
+                                  : 'text-blue-600'
+                          }`}>
+                            {volume.size}
+                          </span>
+                        </div>
+                        <span className="text-sm font-medium">{volume.label}</span>
+                        <span className={`text-xs font-bold ${
+                          isEsgotado
+                            ? 'text-red-500'
+                            : isEsgotando
+                              ? 'text-yellow-700'
+                              : isNovidade
+                                ? 'text-blue-700'
+                                : 'text-blue-600'
+                        }`}>
+                          {isEsgotado ? 'Esgotado' : `R$ ${PRECOS[volume.value]}`}
+                        </span>
+                      </button>
+                    ))}
                   </div>
                 </div>
-                
-                <div className="grid grid-cols-3 gap-2">
-                  {VOLUMES.map((volume) => (
-                    <button
-                      key={volume.value}
-                      type="button"
-                      onClick={() => addItem(drink, volume.value)}
-                      className="flex flex-col items-center gap-1 p-3 bg-gray-50 hover:bg-blue-50 rounded-lg transition-colors border-2 border-transparent hover:border-blue-300 tablet-btn"
-                    >
-                      <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                        <span className="text-blue-600 font-bold">{volume.size}</span>
-                      </div>
-                      <span className="text-sm font-medium">{volume.label}</span>
-                      <span className="text-xs text-blue-600 font-bold">
-                        R$ {PRECOS[volume.value]}
-                      </span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
 
