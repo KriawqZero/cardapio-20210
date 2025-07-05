@@ -8,8 +8,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Drinks da 20210 - São João IFMS",
-  description: "Sistema de pedidos para a barraca de drinks da turma 20210 - São João IFMS",
+  title: "Drinks da 20210 - Arraiá IFMS",
+  description: "Sistema de pedidos para a barraca de drinks da turma 20210 - Arraiá IFMS",
 };
 
 export default function RootLayout({

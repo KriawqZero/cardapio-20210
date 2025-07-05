@@ -21,7 +21,7 @@ type ItemPedido = {
   drink: {
     id: string;
     nome: string;
-    descricao?: string;
+    descricao?: string | null;
   };
 };
 

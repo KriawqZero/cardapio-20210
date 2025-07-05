@@ -5,7 +5,7 @@ const prisma = new PrismaClient();
 async function main() {
   console.log('🌱 Populando banco de dados...');
 
-  // Drinks típicos de São João
+  // Drinks típicos de Arraiá
   const drinks = [
     {
       nome: 'Morango',

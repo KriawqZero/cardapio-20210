@@ -3,12 +3,14 @@ import { notFound } from 'next/navigation';
 import OrderStatus from '@/components/OrderStatus';
 
 interface PageProps {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
 export default async function OrderPage({ params }: PageProps) {
+  const { id } = await params;
+  
   const pedido = await prisma.pedido.findUnique({
-    where: { id: params.id },
+    where: { id },
     include: {
       itens: {
         include: {
@@ -22,6 +24,21 @@ export default async function OrderPage({ params }: PageProps) {
     notFound();
   }
 
+  // Converter datas para strings para compatibilidade com o componente
+  const pedidoFormatted = {
+    ...pedido,
+    createdAt: pedido.createdAt.toISOString(),
+    updatedAt: pedido.updatedAt.toISOString(),
+    itens: pedido.itens.map(item => ({
+      ...item,
+      drink: {
+        ...item.drink,
+        createdAt: item.drink.createdAt.toISOString(),
+        updatedAt: item.drink.updatedAt.toISOString()
+      }
+    }))
+  };
+
   return (
     <div className="min-h-screen modern-bg">
       <div className="container mx-auto px-4 py-8">
@@ -30,14 +47,14 @@ export default async function OrderPage({ params }: PageProps) {
             Drinks da 20210
           </h1>
           <h2 className="text-lg md:text-xl text-white/90 mb-2">
-            São João IFMS 2024
+            Arraiá IFMS 2025
           </h2>
           <p className="text-white/80">
             Acompanhe seu pedido
           </p>
         </div>
         
-        <OrderStatus pedido={pedido} />
+        <OrderStatus pedido={pedidoFormatted} />
       </div>
     </div>
   );

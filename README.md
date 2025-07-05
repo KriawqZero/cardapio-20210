@@ -1,6 +1,6 @@
 # Sistema de Pedidos - Drinks da 20210
 
-Sistema web moderno para gerenciamento de pedidos de drinks da barraca da turma 20210 no São João do IFMS.
+Sistema web moderno para gerenciamento de pedidos de drinks da barraca da turma 20210 no Arraiá do IFMS.
 
 ## 🚀 Funcionalidades
 
@@ -187,7 +187,7 @@ Para dúvidas ou problemas:
 
 ## 🎊 Sobre o Projeto
 
-Este sistema foi desenvolvido especificamente para a barraca de drinks da turma 20210 do IFMS durante o São João 2024. Foi projetado para ser:
+Este sistema foi desenvolvido especificamente para a barraca de drinks da turma 20210 do IFMS durante o Arraiá 2025. Foi projetado para ser:
 - **Simples de usar** durante a festa
 - **Rápido de configurar** no evento
 - **Fácil de manter** durante o uso
@@ -206,4 +206,4 @@ Este sistema foi desenvolvido especificamente para a barraca de drinks da turma 
 
 ---
 
-**Bom São João e muito sucesso na barraca da 20210!**
+**Bom Arraiá e muito sucesso na barraca da 20210!**

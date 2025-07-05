@@ -1,5 +1,5 @@
 // Schema para Sistema de Gerenciamento de Pedidos - Barraca 20.210
-// Evento São João - IFMS
+// Evento Arraiá - IFMS
 
 generator client {
   provider = "prisma-client-js"

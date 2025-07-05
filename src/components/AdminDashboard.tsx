@@ -13,7 +13,8 @@ import {
   Trash2,
   Users,
   TrendingUp,
-  DollarSign
+  DollarSign,
+  Filter
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -67,6 +68,7 @@ export default function AdminDashboard() {
   const [drinks, setDrinks] = useState<Drink[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
   const [activeTab, setActiveTab] = useState<'pedidos' | 'drinks' | 'relatorios'>('pedidos');
   const [newDrink, setNewDrink] = useState({ nome: '', descricao: '' });
   const [showAddDrink, setShowAddDrink] = useState(false);
@@ -137,9 +139,11 @@ export default function AdminDashboard() {
     }
   };
 
-  const filteredPedidos = pedidos.filter(pedido =>
-    pedido.nomeCliente.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredPedidos = pedidos.filter(pedido => {
+    const matchesSearch = pedido.nomeCliente.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus = statusFilter === 'all' || pedido.status === statusFilter;
+    return matchesSearch && matchesStatus;
+  });
 
   const getStatusStats = () => {
     const stats = pedidos.reduce((acc, pedido) => {
@@ -219,8 +223,9 @@ export default function AdminDashboard() {
       {/* Conteúdo dos Tabs */}
       {activeTab === 'pedidos' && (
         <div className="space-y-6">
-          {/* Busca */}
-          <div className="card-modern p-4">
+          {/* Filtros */}
+          <div className="card-modern p-4 space-y-4">
+            {/* Busca */}
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
               <input
@@ -231,6 +236,58 @@ export default function AdminDashboard() {
                 className="w-full pl-10 pr-4 py-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none text-lg"
               />
             </div>
+
+            {/* Filtro por Status */}
+            <div className="flex flex-wrap gap-2 items-center">
+              <div className="flex items-center gap-2">
+                <Filter className="w-5 h-5 text-gray-500" />
+                <span className="text-sm font-medium text-gray-700">Filtrar por status:</span>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  onClick={() => setStatusFilter('all')}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    statusFilter === 'all'
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  Todos ({pedidos.length})
+                </button>
+                {Object.entries(STATUS_LABELS).map(([status, label]) => {
+                  const count = pedidos.filter(p => p.status === status).length;
+                  return (
+                    <button
+                      key={status}
+                      onClick={() => setStatusFilter(status)}
+                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                        statusFilter === status
+                          ? 'bg-blue-600 text-white'
+                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      }`}
+                    >
+                      {label} ({count})
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Informações dos Filtros */}
+            <div className="text-sm text-gray-600 flex items-center gap-2">
+              <span>Mostrando {filteredPedidos.length} de {pedidos.length} pedidos</span>
+              {(searchTerm || statusFilter !== 'all') && (
+                <button
+                  onClick={() => {
+                    setSearchTerm('');
+                    setStatusFilter('all');
+                  }}
+                  className="text-blue-600 hover:text-blue-800 underline"
+                >
+                  Limpar filtros
+                </button>
+              )}
+            </div>
           </div>
 
           {/* Lista de Pedidos */}
@@ -239,7 +296,10 @@ export default function AdminDashboard() {
               <div className="card-modern p-8 text-center">
                 <Coffee className="w-16 h-16 mx-auto text-gray-400 mb-4" />
                 <p className="text-gray-600 text-lg">
-                  {searchTerm ? 'Nenhum pedido encontrado' : 'Nenhum pedido ainda'}
+                  {searchTerm || statusFilter !== 'all' 
+                    ? 'Nenhum pedido encontrado com os filtros aplicados' 
+                    : 'Nenhum pedido ainda'
+                  }
                 </p>
               </div>
             ) : (
@@ -462,4 +522,4 @@ export default function AdminDashboard() {
       )}
     </div>
   );
-} 
+}

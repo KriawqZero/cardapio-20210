@@ -10,7 +10,7 @@ export default function Home() {
             Drinks da 20210
           </h1>
           <h2 className="text-xl md:text-2xl text-white mb-2 font-semibold">
-            São João IFMS 2024
+            Arraiá IFMS 2025
           </h2>
           <p className="text-white/80 text-lg">
             Faça seu pedido aqui!

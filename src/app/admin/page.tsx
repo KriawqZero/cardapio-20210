@@ -11,7 +11,7 @@ export default function AdminPage() {
             Painel Administrativo
           </h1>
           <h2 className="text-lg md:text-xl text-white/90 mb-2">
-            Drinks da 20210 - São João IFMS 2024
+            Drinks da 20210 - Arraiá IFMS 2025
           </h2>
           <p className="text-white/80">
             Gerenciamento de Pedidos e Drinks

@@ -49,7 +49,7 @@ export default function AdminLogin() {
               Área Administrativa
             </h1>
             <p className="text-gray-600">
-              Drinks da 20210 - São João IFMS
+              Drinks da 20210 - Arraiá IFMS
             </p>
           </div>
 
