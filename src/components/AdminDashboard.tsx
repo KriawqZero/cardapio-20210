@@ -51,6 +51,7 @@ type ItemPedido = {
 type Pedido = {
   id: string;
   nomeCliente: string;
+  observacao?: string;
   total: number;
   status: string;
   createdAt: string;
@@ -111,7 +112,7 @@ export default function AdminDashboard() {
   const [drinks, setDrinks] = useState<Drink[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [statusFilter, setStatusFilter] = useState<string>('active'); // 'active' exclui entregues, 'all' inclui todos
   const [activeTab, setActiveTab] = useState<'pedidos' | 'drinks' | 'relatorios' | 'criar-pedido'>('pedidos');
   const [newDrink, setNewDrink] = useState({ nome: '', descricao: '' });
   const [showAddDrink, setShowAddDrink] = useState(false);
@@ -234,6 +235,52 @@ export default function AdminDashboard() {
       }
     } catch (error) {
       console.error('Erro ao atualizar status:', error);
+    }
+  };
+
+  const deleteOrder = async (pedidoId: string, nomeCliente: string) => {
+    const confirmDelete = window.confirm(
+      `Tem certeza que deseja deletar o pedido de ${nomeCliente}?\n\nEsta ação não pode ser desfeita.`
+    );
+    
+    if (!confirmDelete) return;
+
+    try {
+      const response = await fetch(`/api/pedidos?id=${pedidoId}`, {
+        method: 'DELETE',
+      });
+      
+      if (response.ok) {
+        toast.success('Pedido deletado com sucesso!', {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+        });
+        await fetchData();
+      } else {
+        const errorData = await response.json();
+        toast.error(errorData.error || 'Erro ao deletar pedido', {
+          position: "top-right",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+        });
+      }
+    } catch (error) {
+      console.error('Erro ao deletar pedido:', error);
+      toast.error('Erro ao deletar pedido', {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
     }
   };
 
@@ -369,7 +416,9 @@ export default function AdminDashboard() {
   const filteredPedidos = pedidos
     .filter(pedido => {
       const matchesSearch = pedido.nomeCliente.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesStatus = statusFilter === 'all' || pedido.status === statusFilter;
+      const matchesStatus = statusFilter === 'all' || 
+                           (statusFilter === 'active' && pedido.status !== 'entregue') || 
+                           pedido.status === statusFilter;
       return matchesSearch && matchesStatus;
     })
     .sort((a, b) => {
@@ -451,13 +500,13 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="admin-container space-y-6">
       {/* Tabs */}
       <div className="card-modern">
-        <div className="flex space-x-1 p-2">
+        <div className="admin-tabs flex space-x-1 p-2">
           <button
             onClick={() => setActiveTab('pedidos')}
-            className={`flex-1 px-4 py-2 rounded-lg font-medium transition-colors ${
+            className={`admin-tab-button flex-1 px-4 py-2 rounded-lg font-medium transition-colors ${
               activeTab === 'pedidos' 
                 ? 'bg-blue-600 text-white' 
                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -467,7 +516,7 @@ export default function AdminDashboard() {
           </button>
           <button
             onClick={() => setActiveTab('drinks')}
-            className={`flex-1 px-4 py-2 rounded-lg font-medium transition-colors ${
+            className={`admin-tab-button flex-1 px-4 py-2 rounded-lg font-medium transition-colors ${
               activeTab === 'drinks' 
                 ? 'bg-blue-600 text-white' 
                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -477,7 +526,7 @@ export default function AdminDashboard() {
           </button>
           <button
             onClick={() => setActiveTab('relatorios')}
-            className={`flex-1 px-4 py-2 rounded-lg font-medium transition-colors ${
+            className={`admin-tab-button flex-1 px-4 py-2 rounded-lg font-medium transition-colors ${
               activeTab === 'relatorios' 
                 ? 'bg-blue-600 text-white' 
                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -487,7 +536,7 @@ export default function AdminDashboard() {
           </button>
           <button
             onClick={() => setActiveTab('criar-pedido')}
-            className={`flex-1 px-4 py-2 rounded-lg font-medium transition-colors ${
+            className={`admin-tab-button flex-1 px-4 py-2 rounded-lg font-medium transition-colors ${
               activeTab === 'criar-pedido' 
                 ? 'bg-blue-600 text-white' 
                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -504,7 +553,7 @@ export default function AdminDashboard() {
       {activeTab === 'pedidos' && (
         <div className="space-y-6">
           {/* Filtros */}
-          <div className="card-modern p-4 space-y-4">
+          <div className="card-modern p-4 admin-filters space-y-4">
             {/* Busca */}
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
@@ -523,7 +572,17 @@ export default function AdminDashboard() {
                 <Filter className="w-5 h-5 text-gray-500" />
                 <span className="text-sm font-medium text-gray-700">Filtrar por status:</span>
               </div>
-              <div className="flex flex-wrap gap-2">
+              <div className="admin-filter-buttons flex flex-wrap gap-2">
+                <button
+                  onClick={() => setStatusFilter('active')}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    statusFilter === 'active'
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  Ativos ({pedidos.filter(p => p.status !== 'entregue').length})
+                </button>
                 <button
                   onClick={() => setStatusFilter('all')}
                   className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
@@ -582,7 +641,7 @@ export default function AdminDashboard() {
             </div>
 
             {/* Controles de Paginação */}
-            <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
+            <div className="admin-pagination flex flex-col md:flex-row gap-4 items-center justify-between">
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-medium text-gray-700">Itens por página:</span>
@@ -603,12 +662,12 @@ export default function AdminDashboard() {
                 </div>
               </div>
               
-              <div className="flex items-center gap-2">
-                {(searchTerm || statusFilter !== 'all') && (
+              <div className="admin-pagination-controls flex items-center gap-2">
+                {(searchTerm || statusFilter !== 'active') && (
                   <button
                     onClick={() => {
                       setSearchTerm('');
-                      setStatusFilter('all');
+                      setStatusFilter('active');
                     }}
                     className="text-blue-600 hover:text-blue-800 underline text-sm"
                   >
@@ -675,9 +734,9 @@ export default function AdminDashboard() {
                 <div className="card-modern p-8 text-center">
                   <Coffee className="w-16 h-16 mx-auto text-gray-400 mb-4" />
                   <p className="text-gray-600 text-lg">
-                    {searchTerm || statusFilter !== 'all' 
+                    {searchTerm || statusFilter !== 'active' 
                       ? 'Nenhum pedido encontrado com os filtros aplicados' 
-                      : 'Nenhum pedido ainda'
+                      : 'Nenhum pedido ativo ainda'
                     }
                   </p>
                 </div>
@@ -687,10 +746,10 @@ export default function AdminDashboard() {
                 const isNewOrder = newOrderIds.includes(pedido.id);
                 
                 return (
-                <div key={pedido.id} className={`card-modern p-6 transition-all duration-1000 ${
+                <div key={pedido.id} className={`admin-order-card card-modern p-6 transition-all duration-1000 ${
                   isNewOrder ? 'new-order-glow pulse-glow' : ''
                 }`}>
-                  <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4">
+                  <div className="admin-order-header flex flex-col md:flex-row md:items-center md:justify-between mb-4">
                     <div className="flex-1">
                       <h3 className="text-xl font-bold text-gray-800 mb-2">
                         {pedido.nomeCliente}
@@ -702,12 +761,27 @@ export default function AdminDashboard() {
                         R$ {pedido.total.toFixed(2)}
                       </p>
                     </div>
-                    <div className="mt-4 md:mt-0">
+                    <div className="mt-4 md:mt-0 flex items-center gap-3">
                       <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium border ${STATUS_COLORS[pedido.status as keyof typeof STATUS_COLORS]}`}>
                         {STATUS_LABELS[pedido.status as keyof typeof STATUS_LABELS]}
                       </span>
+                      <button
+                        onClick={() => deleteOrder(pedido.id, pedido.nomeCliente)}
+                        className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                        title="Deletar pedido"
+                      >
+                        <Trash2 className="w-5 h-5" />
+                      </button>
                     </div>
                   </div>
+
+                  {/* Observação */}
+                  {pedido.observacao && (
+                    <div className="mb-4 p-3 bg-yellow-50 border-l-4 border-yellow-400 rounded-lg">
+                      <h4 className="font-semibold text-yellow-800 mb-1">Observação:</h4>
+                      <p className="text-yellow-700">{pedido.observacao}</p>
+                    </div>
+                  )}
 
                   {/* Itens do Pedido */}
                   <div className="mb-4">
@@ -727,7 +801,7 @@ export default function AdminDashboard() {
                   </div>
 
                   {/* Botões de Status */}
-                  <div className="flex flex-wrap gap-2">
+                  <div className="admin-order-actions flex flex-wrap gap-2">
                     {Object.entries(STATUS_LABELS).map(([status, label]) => (
                       <button
                         key={status}
@@ -1261,4 +1335,5 @@ export default function AdminDashboard() {
       )}
     </div>
   );
+}
 }

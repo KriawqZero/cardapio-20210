@@ -31,6 +31,7 @@ model Drink {
 model Pedido {
   id          String   @id @default(cuid())
   nomeCliente String
+  observacao  String?
   total       Float
   status      String   @default("aguardando_pagamento") // aguardando_pagamento, ficha_entregue, em_preparo, pronto, entregue
   createdAt   DateTime @default(now())

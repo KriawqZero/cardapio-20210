@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { Coffee, Plus, Minus, ShoppingCart, CheckCircle } from 'lucide-react';
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 
 type Volume = 300 | 500 | 700;
 type Drink = {
@@ -23,6 +25,21 @@ type PedidoItem = {
   preco: number;
 };
 
+type PedidoHistorico = {
+  id: string;
+  nomeCliente: string;
+  observacao?: string;
+  total: number;
+  status: string;
+  createdAt: string;
+  itens: {
+    drinkNome: string;
+    volume: number;
+    quantidade: number;
+    preco: number;
+  }[];
+};
+
 const PRECOS: Record<Volume, number> = {
   300: 8,
   500: 12,
@@ -35,17 +52,85 @@ const VOLUMES = [
   { value: 700 as Volume, label: '700ml', size: 'G' },
 ];
 
+const STATUS_COLORS = {
+  aguardando_pagamento: 'bg-yellow-100 text-yellow-800 border-yellow-300',
+  ficha_entregue: 'bg-blue-100 text-blue-800 border-blue-300',
+  em_preparo: 'bg-purple-100 text-purple-800 border-purple-300',
+  pronto: 'bg-green-100 text-green-800 border-green-300',
+  entregue: 'bg-gray-100 text-gray-800 border-gray-300'
+} as Record<string, string>;
+
+const STATUS_LABELS = {
+  aguardando_pagamento: 'Aguardando Pagamento',
+  ficha_entregue: 'Ficha Entregue',
+  em_preparo: 'Em Preparo',
+  pronto: 'Pronto',
+  entregue: 'Entregue'
+} as Record<string, string>;
+
 export default function ClientOrderForm() {
   const [drinks, setDrinks] = useState<Drink[]>([]);
   const [nomeCliente, setNomeCliente] = useState('');
+  const [observacao, setObservacao] = useState('');
   const [itens, setItens] = useState<PedidoItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [pedidoId, setPedidoId] = useState<string | null>(null);
+  const [pedidosHistorico, setPedidosHistorico] = useState<PedidoHistorico[]>([]);
+  const [showHistorico, setShowHistorico] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
     fetchDrinks();
+    loadHistorico();
   }, []);
+
+  const loadHistorico = () => {
+    try {
+      const storedHistorico = localStorage.getItem('pedidos-historico');
+      if (storedHistorico) {
+        setPedidosHistorico(JSON.parse(storedHistorico));
+      }
+      
+      const storedName = localStorage.getItem('ultimo-nome-cliente');
+      if (storedName) {
+        setNomeCliente(storedName);
+      }
+    } catch (error) {
+      console.error('Erro ao carregar histórico:', error);
+    }
+  };
+
+  const saveToHistorico = (pedidoData: any) => {
+    try {
+      const pedidoHistorico: PedidoHistorico = {
+        id: pedidoData.id,
+        nomeCliente: pedidoData.nomeCliente,
+        observacao: pedidoData.observacao,
+        total: pedidoData.total,
+        status: pedidoData.status,
+        createdAt: pedidoData.createdAt,
+        itens: pedidoData.itens.map((item: any) => ({
+          drinkNome: item.drink.nome,
+          volume: item.volume,
+          quantidade: item.quantidade,
+          preco: item.preco
+        }))
+      };
+      
+      const newHistorico = [pedidoHistorico, ...pedidosHistorico.filter(p => p.id !== pedidoData.id)];
+      
+      // Manter apenas os últimos 10 pedidos
+      const limitedHistorico = newHistorico.slice(0, 10);
+      
+      localStorage.setItem('pedidos-historico', JSON.stringify(limitedHistorico));
+      localStorage.setItem('ultimo-nome-cliente', pedidoData.nomeCliente);
+      
+      setPedidosHistorico(limitedHistorico);
+    } catch (error) {
+      console.error('Erro ao salvar histórico:', error);
+    }
+  };
 
   const fetchDrinks = async () => {
     try {
@@ -100,6 +185,7 @@ export default function ClientOrderForm() {
     if (!nomeCliente.trim() || itens.length === 0) return;
 
     setLoading(true);
+    setErrorMessage(null);
     try {
       const response = await fetch('/api/pedidos', {
         method: 'POST',
@@ -108,23 +194,39 @@ export default function ClientOrderForm() {
         },
         body: JSON.stringify({
           nomeCliente: nomeCliente.trim(),
+          observacao: observacao.trim() || null,
           itens,
         }),
       });
 
       if (response.ok) {
         const pedidoData = await response.json();
+        saveToHistorico(pedidoData);
         setPedidoId(pedidoData.id);
         setSuccess(true);
-        setNomeCliente('');
+        setObservacao('');
         setItens([]);
         setTimeout(() => {
           setSuccess(false);
           setPedidoId(null);
         }, 5000);
+      } else {
+        const errorData = await response.json();
+        if (errorData.unavailableDrinks) {
+          const drinkNames = errorData.unavailableDrinks.map((drink: any) => drink.nome).join(', ');
+          setErrorMessage(`Ops! Os seguintes drinks não estão mais disponíveis: ${drinkNames}. Por favor, remova-os do seu pedido.`);
+          // Remover itens indisponíveis do carrinho
+          const availableItems = itens.filter(item => 
+            !errorData.unavailableDrinks.some((unavailable: any) => unavailable.id === item.drinkId)
+          );
+          setItens(availableItems);
+        } else {
+          setErrorMessage(errorData.error || 'Erro ao enviar pedido');
+        }
       }
     } catch (error) {
       console.error('Erro ao enviar pedido:', error);
+      setErrorMessage('Erro ao enviar pedido. Tente novamente.');
     } finally {
       setLoading(false);
     }
@@ -171,6 +273,81 @@ export default function ClientOrderForm() {
 
   return (
     <div className="max-w-4xl mx-auto">
+      {/* Histórico de Pedidos */}
+      {pedidosHistorico.length > 0 && (
+        <div className="card-modern p-6 mb-6">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-xl font-bold text-gray-800">Seus Últimos Pedidos</h3>
+            <button
+              type="button"
+              onClick={() => setShowHistorico(!showHistorico)}
+              className="btn-secondary text-sm"
+            >
+              {showHistorico ? 'Ocultar' : 'Mostrar'} Histórico
+            </button>
+          </div>
+          
+          {showHistorico && (
+            <div className="space-y-3">
+              {pedidosHistorico.map((pedido) => (
+                <div key={pedido.id} className="border rounded-lg p-4 bg-gray-50">
+                  <div className="flex justify-between items-start mb-2">
+                    <div>
+                      <h4 className="font-semibold text-gray-800">{pedido.nomeCliente}</h4>
+                      <p className="text-sm text-gray-600">
+                        {format(new Date(pedido.createdAt), 'dd/MM/yyyy HH:mm', { locale: ptBR })}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <span className={`px-2 py-1 text-xs rounded-full ${STATUS_COLORS[pedido.status] || 'bg-gray-100 text-gray-800'}`}>
+                        {STATUS_LABELS[pedido.status] || pedido.status}
+                      </span>
+                      <p className="text-sm font-bold text-blue-600 mt-1">
+                        R$ {pedido.total.toFixed(2)}
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <div className="text-sm text-gray-600 mb-2">
+                    {pedido.itens.map((item, index) => (
+                      <span key={index}>
+                        {item.quantidade}x {item.drinkNome} ({item.volume}ml)
+                        {index < pedido.itens.length - 1 && ', '}
+                      </span>
+                    ))}
+                  </div>
+                  
+                  {pedido.observacao && (
+                    <p className="text-sm text-gray-600 italic">
+                      Obs: {pedido.observacao}
+                    </p>
+                  )}
+                  
+                  <div className="mt-3 flex gap-2">
+                    <a
+                      href={`/pedido/${pedido.id}`}
+                      className="btn-secondary text-sm"
+                    >
+                      Ver Detalhes
+                    </a>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setNomeCliente(pedido.nomeCliente);
+                        setObservacao(pedido.observacao || '');
+                      }}
+                      className="btn-primary text-sm"
+                    >
+                      Usar Dados
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+      
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Nome do Cliente */}
         <div className="card-modern p-6">
@@ -178,16 +355,40 @@ export default function ClientOrderForm() {
             <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
               <span className="text-blue-600 font-bold">1</span>
             </div>
-            <h3 className="text-xl font-bold text-gray-800">Seu Nome</h3>
+            <h3 className="text-xl font-bold text-gray-800">Seus Dados</h3>
           </div>
-          <input
-            type="text"
-            placeholder="Digite seu nome completo"
-            value={nomeCliente}
-            onChange={(e) => setNomeCliente(e.target.value)}
-            className="w-full p-4 border-2 border-gray-300 rounded-lg text-lg focus:border-blue-500 focus:outline-none"
-            required
-          />
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Nome completo*
+              </label>
+              <input
+                type="text"
+                placeholder="Digite seu nome completo"
+                value={nomeCliente}
+                onChange={(e) => setNomeCliente(e.target.value)}
+                className="w-full p-4 border-2 border-gray-300 rounded-lg text-lg focus:border-blue-500 focus:outline-none"
+                required
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Observação (opcional)
+              </label>
+              <textarea
+                placeholder="Ex: Sem essência de baunilha, menos açúcar, etc."
+                value={observacao}
+                onChange={(e) => setObservacao(e.target.value)}
+                className="w-full p-4 border-2 border-gray-300 rounded-lg text-lg focus:border-blue-500 focus:outline-none resize-none"
+                rows={3}
+                maxLength={200}
+              />
+              <p className="text-sm text-gray-500 mt-1">
+                {observacao.length}/200 caracteres
+              </p>
+            </div>
+          </div>
         </div>
 
         {/* Drinks Disponíveis */}
@@ -364,6 +565,21 @@ export default function ClientOrderForm() {
                     R$ {calcularTotal().toFixed(2)}
                   </span>
                 </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Mensagem de Erro */}
+        {errorMessage && (
+          <div className="card-modern p-6 bg-red-50 border-2 border-red-200">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
+                <span className="text-red-600 font-bold">!</span>
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-red-800">Erro ao fazer pedido</h3>
+                <p className="text-red-700">{errorMessage}</p>
               </div>
             </div>
           </div>
