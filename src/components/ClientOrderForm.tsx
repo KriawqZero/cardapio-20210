@@ -25,7 +25,7 @@ type PedidoItem = {
 
 const PRECOS: Record<Volume, number> = {
   300: 8,
-  500: 10,
+  500: 12,
   700: 14,
 };
 
