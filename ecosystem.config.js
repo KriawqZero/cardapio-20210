@@ -9,7 +9,7 @@ module.exports = {
     max_memory_restart: '1G',
     env: {
       NODE_ENV: 'production',
-      PORT: 3000
+      PORT: 3123
     }
     // PM2 vai usar logs padrão em ~/.pm2/logs/
   }]
