@@ -13,21 +13,6 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v3
       
-    - name: Setup Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: '18'
-        cache: 'yarn'
-        
-    - name: Install dependencies
-      run: yarn install --frozen-lockfile
-      
-    - name: Generate Prisma Client
-      run: yarn db:generate
-      
-    - name: Build application
-      run: yarn build
-      
     - name: Deploy to server
       uses: appleboy/ssh-action@v0.1.5
       with:
