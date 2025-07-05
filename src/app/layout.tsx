@@ -12,6 +12,17 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "Drinks da 20210 - Arraiá IFMS",
   description: "Sistema de pedidos para a barraca de drinks da turma 20210 - Arraiá IFMS",
+  icons: {
+    icon: [
+      {
+        url: '/favicon.png',
+        sizes: '500x500',
+        type: 'image/png',
+      }
+    ],
+    shortcut: '/favicon.png',
+    apple: '/favicon.png',
+  },
 };
 
 export default function RootLayout({
