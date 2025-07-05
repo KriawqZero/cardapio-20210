@@ -63,6 +63,8 @@ jobs:
             npm run build
           fi
           
+          yarn build
+          
           # Verificar se PM2 existe e reiniciar
           if command -v pm2 >/dev/null 2>&1; then
             echo "✅ PM2 encontrado: $(which pm2)"
