@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Lock, Eye, EyeOff } from 'lucide-react';
+import Watermark from '@/components/Watermark';
 
 export default function AdminLogin() {
   const [password, setPassword] = useState('');
@@ -103,6 +104,7 @@ export default function AdminLogin() {
           </div>
         </div>
       </div>
+      <Watermark />
     </div>
   );
 } 

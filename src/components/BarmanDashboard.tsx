@@ -5,6 +5,7 @@ import { Clock, CheckCircle, Coffee, RefreshCw } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { toast } from 'react-toastify';
+import Watermark from './Watermark';
 
 type Drink = {
   id: string;
@@ -308,6 +309,7 @@ export default function BarmanDashboard() {
         <p className="text-gray-400 text-sm">
           Última atualização: {format(new Date(), 'HH:mm:ss', { locale: ptBR })}
         </p>
+        <Watermark variant="dark" />
       </div>
     </div>
   );

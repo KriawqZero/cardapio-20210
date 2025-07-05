@@ -1,6 +1,7 @@
 'use client';
 
 import AdminDashboard from '@/components/AdminDashboard';
+import Watermark from '@/components/Watermark';
 
 export default function AdminPage() {
   return (
@@ -21,7 +22,7 @@ export default function AdminPage() {
         <AdminDashboard />
         
         {/* Botão de Logout */}
-        <div className="fixed top-4 right-4">
+        <div className="fixed top-4 left-4">
           <button 
             onClick={async () => {
               await fetch('/api/admin/logout', { method: 'POST' });
@@ -33,6 +34,7 @@ export default function AdminPage() {
           </button>
         </div>
       </div>
+      <Watermark variant="dark" />
     </div>
   );
 } 

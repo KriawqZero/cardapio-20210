@@ -1,4 +1,5 @@
 import ClientOrderForm from '@/components/ClientOrderForm';
+import Watermark from '@/components/Watermark';
 import { Settings } from 'lucide-react';
 
 export default function Home() {
@@ -20,6 +21,7 @@ export default function Home() {
         <ClientOrderForm />
         
       </div>
+      <Watermark variant="dark" />
     </div>
   );
 }

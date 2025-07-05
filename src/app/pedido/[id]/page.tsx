@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/prisma';
 import { notFound } from 'next/navigation';
 import OrderStatus from '@/components/OrderStatus';
+import Watermark from '@/components/Watermark';
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -56,6 +57,7 @@ export default async function OrderPage({ params }: PageProps) {
         
         <OrderStatus pedido={pedidoFormatted} />
       </div>
+      <Watermark variant="dark" />
     </div>
   );
 } 
