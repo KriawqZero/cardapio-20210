@@ -1,0 +1,64 @@
+name: Deploy Cardápio 20210
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        cache: 'yarn'
+        
+    - name: Install dependencies
+      run: yarn install --frozen-lockfile
+      
+    - name: Generate Prisma Client
+      run: yarn db:generate
+      
+    - name: Build application
+      run: yarn build
+      
+    - name: Deploy to server
+      uses: appleboy/ssh-action@v0.1.5
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USERNAME }}
+        key: ${{ secrets.SSH_KEY }}
+        port: ${{ secrets.PORT || 22 }}
+        script: |
+          mkdir -p $HOME/cardapio-20210
+          cd $HOME/cardapio-20210
+          
+          # Backup atual (caso dê problema)
+          git stash
+          
+          # Atualizar código
+          git pull origin main
+          
+          # Instalar dependências
+          yarn install --frozen-lockfile
+          
+          # Gerar Prisma Client
+          yarn db:generate
+          
+          # Sincronizar banco
+          yarn db:push
+          
+          # Build da aplicação
+          yarn build
+          
+          # Reiniciar PM2
+          pm2 restart cardapio-20210 || pm2 start ecosystem.config.js
+          
+          # Mostrar status
+          pm2 status 

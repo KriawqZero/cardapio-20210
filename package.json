@@ -11,7 +11,14 @@
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:push": "prisma db push",
-    "db:seed": "tsx prisma/seed.ts"
+    "db:seed": "tsx prisma/seed.ts",
+    "pm2:start": "pm2 start ecosystem.config.js",
+    "pm2:stop": "pm2 stop cardapio-20210",
+    "pm2:restart": "pm2 restart cardapio-20210",
+    "pm2:delete": "pm2 delete cardapio-20210",
+    "pm2:status": "pm2 status",
+    "pm2:logs": "pm2 logs cardapio-20210",
+    "deploy": "yarn build && yarn db:push && yarn pm2:restart"
   },
   "dependencies": {
     "@prisma/client": "^5.20.0",

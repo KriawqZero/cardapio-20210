@@ -232,11 +232,11 @@ export default function ClientOrderForm() {
                     </div>
                   )}
                   
-                  <div className="flex items-center gap-3 mb-3">
+                <div className="flex items-center gap-3 mb-3">
                     <Coffee className={`w-8 h-8 ${
                       isEsgotado ? 'text-red-400' : isEsgotando ? 'text-yellow-500' : isNovidade ? 'text-blue-500' : 'text-blue-500'
                     }`} />
-                    <div>
+                  <div>
                       <h4 className={`font-bold ${
                         isEsgotado ? 'text-red-600' : isEsgotando ? 'text-yellow-700' : isNovidade ? 'text-blue-800' : 'text-gray-800'
                       }`}>
@@ -248,21 +248,21 @@ export default function ClientOrderForm() {
                           <span className="ml-2 text-yellow-500 text-sm">⚠️</span>
                         )}
                       </h4>
-                      {drink.descricao && (
+                    {drink.descricao && (
                         <p className={`text-sm ${
                           isEsgotado ? 'text-red-500' : isEsgotando ? 'text-yellow-600' : 'text-gray-600'
                         }`}>
                           {drink.descricao}
                         </p>
-                      )}
-                    </div>
+                    )}
                   </div>
-                  
-                  <div className="grid grid-cols-3 gap-2">
-                    {VOLUMES.map((volume) => (
-                      <button
-                        key={volume.value}
-                        type="button"
+                </div>
+                
+                <div className="grid grid-cols-3 gap-2">
+                  {VOLUMES.map((volume) => (
+                    <button
+                      key={volume.value}
+                      type="button"
                         onClick={() => !isEsgotado && addItem(drink, volume.value)}
                         disabled={isEsgotado}
                         className={`flex flex-col items-center gap-1 p-3 rounded-lg transition-colors border-2 tablet-btn ${
@@ -274,7 +274,7 @@ export default function ClientOrderForm() {
                                 ? 'bg-blue-100 hover:bg-blue-200 border-transparent hover:border-blue-300 text-blue-700'
                                 : 'bg-gray-50 hover:bg-blue-50 border-transparent hover:border-blue-300'
                         }`}
-                      >
+                    >
                         <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
                           isEsgotado
                             ? 'bg-red-200'
@@ -295,8 +295,8 @@ export default function ClientOrderForm() {
                           }`}>
                             {volume.size}
                           </span>
-                        </div>
-                        <span className="text-sm font-medium">{volume.label}</span>
+                      </div>
+                      <span className="text-sm font-medium">{volume.label}</span>
                         <span className={`text-xs font-bold ${
                           isEsgotado
                             ? 'text-red-500'
@@ -307,11 +307,11 @@ export default function ClientOrderForm() {
                                 : 'text-blue-600'
                         }`}>
                           {isEsgotado ? 'Esgotado' : `R$ ${PRECOS[volume.value]}`}
-                        </span>
-                      </button>
-                    ))}
-                  </div>
+                      </span>
+                    </button>
+                  ))}
                 </div>
+              </div>
               );
             })}
           </div>

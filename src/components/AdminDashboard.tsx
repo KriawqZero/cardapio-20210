@@ -165,12 +165,9 @@ export default function AdminDashboard() {
           // Toast customizado
           const CustomToast = ({ closeToast }: { closeToast?: () => void }) => (
             <div className="flex items-center gap-3">
-              <div className="bg-green-100 rounded-full p-2">
-                <Bell className="w-6 h-6 text-green-600" />
-              </div>
               <div className="flex-1">
                 <div className="font-bold text-lg text-green-800">
-                  🎉 Novo{newOrdersCount > 1 ? 's' : ''} Pedido{newOrdersCount > 1 ? 's' : ''}!
+                  Novo{newOrdersCount > 1 ? 's' : ''} Pedido{newOrdersCount > 1 ? 's' : ''}!
                 </div>
                 <div className="text-sm text-green-700">
                   {newOrdersCount === 1 
@@ -499,46 +496,7 @@ export default function AdminDashboard() {
             Criar Pedido
           </button>
           
-          {/* Botão de teste para notificações - REMOVER EM PRODUÇÃO */}
-          <button
-            onClick={() => {
-              // Simular novo pedido para teste
-              const fakeId = 'test-' + Date.now();
-              setNewOrderIds([fakeId]);
-              
-              const CustomToast = () => (
-                <div className="flex items-center gap-3">
-                  <div className="bg-green-100 rounded-full p-2">
-                    <Bell className="w-6 h-6 text-green-600" />
-                  </div>
-                  <div className="flex-1">
-                    <div className="font-bold text-lg text-green-800">
-                      🎉 Teste de Notificação!
-                    </div>
-                    <div className="text-sm text-green-700">
-                      Sistema funcionando corretamente
-                    </div>
-                  </div>
-                </div>
-              );
-              
-              toast.success(<CustomToast />, {
-                position: "top-right",
-                autoClose: 5000,
-                hideProgressBar: false,
-                closeOnClick: true,
-                pauseOnHover: true,
-                draggable: true,
-                className: "bg-green-50 border-green-200 border-2",
-                progressClassName: "bg-green-500"
-              });
-              
-              setTimeout(() => setNewOrderIds([]), 5000);
-            }}
-            className="px-3 py-1 bg-yellow-500 text-white rounded-lg text-sm hover:bg-yellow-600"
-          >
-            🧪 Testar
-          </button>
+          
         </div>
       </div>
 
