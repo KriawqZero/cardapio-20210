@@ -27,7 +27,7 @@ type ItemPedido = {
 
 type Pedido = {
   id: string;
-  observacao: string;
+  observacao?: string | null;
   nomeCliente: string;
   total: number;
   status: string;
@@ -235,10 +235,12 @@ export default function OrderStatus({ pedido: initialPedido }: OrderStatusProps)
           Informações do Pedido
         </h3>
         <div className="space-y-2 text-sm text-gray-600">
-          <div className="flex justify-between">
-            <span>Observação:</span>
-            <span>{pedido.observacao}</span>
-          </div>
+          {pedido.observacao && (
+            <div className="flex justify-between">
+              <span>Observação:</span>
+              <span>{pedido.observacao}</span>
+            </div>
+          )}
           <div className="flex justify-between">
             <span>Data do Pedido:</span>
             <span>{format(new Date(pedido.createdAt), 'dd/MM/yyyy HH:mm', { locale: ptBR })}</span>
