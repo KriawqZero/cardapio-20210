@@ -13,37 +13,9 @@ export const metadata: Metadata = {
   title: "Drinks da 20210 - Arraiá IFMS",
   description: "Sistema de pedidos para a barraca de drinks da turma 20210 - Arraiá IFMS",
   icons: {
-    icon: [
-      {
-        url: '/favicon.png',
-        sizes: '500x500',
-        type: 'image/png',
-      },
-      {
-        url: '/favicon.png',
-        sizes: '32x32',
-        type: 'image/png',
-      },
-      {
-        url: '/favicon.png',
-        sizes: '16x16',
-        type: 'image/png',
-      }
-    ],
-    shortcut: ['/favicon.png'],
-    apple: [
-      {
-        url: '/favicon.png',
-        sizes: '500x500',
-        type: 'image/png',
-      }
-    ],
-    other: [
-      {
-        rel: 'icon',
-        url: '/favicon.png',
-      }
-    ]
+    icon: '/favicon.png',
+    shortcut: '/favicon.png',
+    apple: '/favicon.png',
   },
 };
 
@@ -54,6 +26,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="pt-BR">
+      <head>
+        <link rel="icon" type="image/png" sizes="500x500" href="/favicon.png" />
+        <link rel="apple-touch-icon" sizes="500x500" href="/favicon.png" />
+      </head>
       <body
         className={`${inter.variable} font-sans antialiased`}
       >
