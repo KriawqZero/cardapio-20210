@@ -328,7 +328,7 @@ export default function ClientOrderForm() {
                       href={`/pedido/${pedido.id}`}
                       className="btn-secondary text-sm"
                     >
-                      Ver Detalhes
+                      Acompanhar Pedido
                     </a>
                     <button
                       type="button"
@@ -355,40 +355,16 @@ export default function ClientOrderForm() {
             <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
               <span className="text-blue-600 font-bold">1</span>
             </div>
-            <h3 className="text-xl font-bold text-gray-800">Seus Dados</h3>
+            <h3 className="text-xl font-bold text-gray-800">Seu Nome</h3>
           </div>
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Nome completo*
-              </label>
-              <input
-                type="text"
-                placeholder="Digite seu nome completo"
-                value={nomeCliente}
-                onChange={(e) => setNomeCliente(e.target.value)}
-                className="w-full p-4 border-2 border-gray-300 rounded-lg text-lg focus:border-blue-500 focus:outline-none"
-                required
-              />
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Observação (opcional)
-              </label>
-              <textarea
-                placeholder="Ex: Sem essência de baunilha, menos açúcar, etc."
-                value={observacao}
-                onChange={(e) => setObservacao(e.target.value)}
-                className="w-full p-4 border-2 border-gray-300 rounded-lg text-lg focus:border-blue-500 focus:outline-none resize-none"
-                rows={3}
-                maxLength={200}
-              />
-              <p className="text-sm text-gray-500 mt-1">
-                {observacao.length}/200 caracteres
-              </p>
-            </div>
-          </div>
+          <input
+            type="text"
+            placeholder="Digite seu nome completo"
+            value={nomeCliente}
+            onChange={(e) => setNomeCliente(e.target.value)}
+            className="w-full p-4 border-2 border-gray-300 rounded-lg text-lg focus:border-blue-500 focus:outline-none"
+            required
+          />
         </div>
 
         {/* Drinks Disponíveis */}
@@ -517,6 +493,31 @@ export default function ClientOrderForm() {
             })}
           </div>
         </div>
+
+        {/* Observação */}
+        {itens.length > 0 && (
+          <div className="card-modern p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                <span className="text-green-600 font-bold">3</span>
+              </div>
+              <h3 className="text-xl font-bold text-gray-800">Observação (opcional)</h3>
+            </div>
+            <div>
+              <textarea
+                placeholder="Ex: Sem essência de baunilha, menos açúcar, com gelo extra, etc."
+                value={observacao}
+                onChange={(e) => setObservacao(e.target.value)}
+                className="w-full p-4 border-2 border-gray-300 rounded-lg text-lg focus:border-blue-500 focus:outline-none resize-none"
+                rows={3}
+                maxLength={200}
+              />
+              <p className="text-sm text-gray-500 mt-1">
+                {observacao.length}/200 caracteres
+              </p>
+            </div>
+          </div>
+        )}
 
         {/* Resumo do Pedido */}
         {itens.length > 0 && (

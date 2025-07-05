@@ -107,7 +107,7 @@ const SORT_LABELS = {
   status: 'Status'
 };
 
-export default function AdminDashboard() {
+function AdminDashboard() {
   const [pedidos, setPedidos] = useState<Pedido[]>([]);
   const [drinks, setDrinks] = useState<Drink[]>([]);
   const [loading, setLoading] = useState(true);
@@ -1336,4 +1336,5 @@ export default function AdminDashboard() {
     </div>
   );
 }
-}
+
+export default AdminDashboard;

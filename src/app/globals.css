@@ -265,9 +265,9 @@ a:not([href=""]):not([href="#"]),
 
 /* Efeito de brilho para pedidos novos */
 .new-order-glow {
-  background: linear-gradient(135deg, rgba(34, 197, 94, 0.2) 0%, rgba(34, 197, 94, 0.1) 100%) !important;
-  border: 3px solid rgba(34, 197, 94, 0.6) !important;
-  box-shadow: 0 0 20px rgba(34, 197, 94, 0.4) !important;
+  background: linear-gradient(90deg, #fff, rgba(190, 216, 199, 0.705) 100%) !important;
+  border: 3px solid rgba(162, 229, 187, 0.6) !important;
+  box-shadow: 0 0 20px rgba(162, 229, 187, 0.4) !important;
   position: relative;
   overflow: hidden;
   transform: scale(1.02);
