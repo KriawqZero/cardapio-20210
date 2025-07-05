@@ -120,6 +120,8 @@ function AdminDashboard() {
   // Estados para notificações
   const [lastOrderIds, setLastOrderIds] = useState<string[]>([]);
   const [newOrderIds, setNewOrderIds] = useState<string[]>([]);
+  const [lastReadyOrderIds, setLastReadyOrderIds] = useState<string[]>([]);
+  const [newReadyOrderIds, setNewReadyOrderIds] = useState<string[]>([]);
   
   // Estados para ordenação
   const [sortField, setSortField] = useState<SortField>('createdAt');
@@ -137,7 +139,7 @@ function AdminDashboard() {
 
   useEffect(() => {
     fetchData();
-    const interval = setInterval(fetchData, 10000); // Atualiza a cada 10 segundos
+    const interval = setInterval(fetchData, 4000); // Atualiza a cada 4 segundos
     return () => clearInterval(interval);
   }, []);
 
@@ -145,10 +147,12 @@ function AdminDashboard() {
   useEffect(() => {
     if (pedidos.length > 0) {
       const currentIds = pedidos.map(p => p.id);
+      const currentReadyIds = pedidos.filter(p => p.status === 'pronto').map(p => p.id);
       
       // Se é a primeira vez carregando os dados
       if (lastOrderIds.length === 0) {
         setLastOrderIds(currentIds);
+        setLastReadyOrderIds(currentReadyIds);
       } else {
         // Verificar se há novos pedidos
         const newIds = currentIds.filter(id => !lastOrderIds.includes(id));
@@ -196,7 +200,56 @@ function AdminDashboard() {
             setNewOrderIds([]);
           }, 10000);
         }
+        
+        // Verificar se há novos pedidos prontos
+        const newReadyIds = currentReadyIds.filter(id => !lastReadyOrderIds.includes(id));
+        if (newReadyIds.length > 0) {
+          // Definir os IDs dos novos pedidos prontos para o efeito de brilho
+          setNewReadyOrderIds(newReadyIds);
+          
+          // Mostrar toast de notificação para pedidos prontos
+          const readyOrdersCount = newReadyIds.length;
+          
+          // Buscar detalhes dos novos pedidos prontos
+          const pedidosProntos = pedidos.filter(p => newReadyIds.includes(p.id));
+          const nomesClientesProntos = pedidosProntos.map(p => p.nomeCliente).join(', ');
+          
+          // Toast customizado para pedidos prontos
+          const ReadyToast = ({ closeToast }: { closeToast?: () => void }) => (
+            <div className="flex items-center gap-3">
+              <div className="flex-1">
+                <div className="font-bold text-lg text-blue-800">
+                  Pedido{readyOrdersCount > 1 ? 's' : ''} Pronto{readyOrdersCount > 1 ? 's' : ''}! 🎉
+                </div>
+                <div className="text-sm text-blue-700">
+                  {readyOrdersCount === 1 
+                    ? `${nomesClientesProntos} está pronto para entrega` 
+                    : `${readyOrdersCount} pedidos prontos: ${nomesClientesProntos.length > 50 ? nomesClientesProntos.substring(0, 50) + '...' : nomesClientesProntos}`
+                  }
+                </div>
+              </div>
+            </div>
+          );
+          
+          toast.info(<ReadyToast />, {
+            position: "top-right",
+            autoClose: 10000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            className: "bg-blue-50 border-blue-200 border-2",
+            progressClassName: "bg-blue-500"
+          });
+          
+          // Remover o brilho após 10 segundos
+          setTimeout(() => {
+            setNewReadyOrderIds([]);
+          }, 10000);
+        }
+        
         setLastOrderIds(currentIds);
+        setLastReadyOrderIds(currentReadyIds);
       }
     }
   }, [pedidos]);
@@ -728,9 +781,12 @@ function AdminDashboard() {
             </div>
           </div>
 
-          {/* Lista de Pedidos */}
-          <div className="space-y-4">
-            {              currentPedidos.length === 0 ? (
+          {/* Layout com Lista Principal e Pedidos Prontos */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Lista Principal de Pedidos - 2/3 do espaço */}
+            <div className="lg:col-span-2 space-y-4">
+              <h3 className="text-xl font-bold text-gray-800">Lista de Pedidos</h3>
+              {              currentPedidos.length === 0 ? (
                 <div className="card-modern p-8 text-center">
                   <Coffee className="w-16 h-16 mx-auto text-gray-400 mb-4" />
                   <p className="text-gray-600 text-lg">
@@ -871,6 +927,75 @@ function AdminDashboard() {
                 </button>
               </div>
             )}
+            </div>
+
+            {/* Lista de Pedidos Prontos - 1/3 do espaço */}
+            <div className="lg:col-span-1 space-y-4">
+              <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+                <CheckCircle className="w-6 h-6 text-green-500" />
+                Pedidos Prontos
+              </h3>
+              <div className="max-h-[800px] overflow-y-auto space-y-3">
+                {pedidos
+                  .filter(pedido => pedido.status === 'pronto')
+                  .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()) // Mais antigo primeiro
+                  .map((pedido) => {
+                    // Verificar se é um pedido recém-pronto
+                    const isNewReady = newReadyOrderIds.includes(pedido.id);
+                    
+                    return (
+                    <div key={pedido.id} className={`card-modern p-4 bg-green-50 border-2 border-green-200 transition-all duration-1000 ${
+                      isNewReady ? 'new-order-glow pulse-glow' : ''
+                    }`}>
+                      <div className="flex justify-between items-start mb-3">
+                        <div className="flex-1">
+                          <h4 className="font-bold text-green-800 mb-1">
+                            {pedido.nomeCliente}
+                          </h4>
+                          <p className="text-sm text-green-600 mb-1">
+                            {format(new Date(pedido.createdAt), 'HH:mm', { locale: ptBR })}
+                          </p>
+                          <p className="text-sm font-medium text-green-700">
+                            R$ {pedido.total.toFixed(2)}
+                          </p>
+                        </div>
+                        <span className="inline-block px-2 py-1 bg-green-500 text-white text-xs rounded-full font-medium">
+                          PRONTO
+                        </span>
+                      </div>
+                      
+                      {/* Itens Resumidos */}
+                      <div className="mb-3">
+                        <div className="space-y-1">
+                          {pedido.itens.map((item, index) => (
+                            <div key={index} className="text-sm text-green-700">
+                              {item.quantidade}x {item.drink.nome} ({item.volume}ml)
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      
+                      {/* Botão Entregue */}
+                      <button
+                        onClick={() => updateOrderStatus(pedido.id, 'entregue')}
+                        className="w-full bg-green-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-green-700 transition-colors flex items-center justify-center gap-2"
+                      >
+                        <CheckCircle className="w-4 h-4" />
+                        ENTREGUE
+                                             </button>
+                     </div>
+                     );
+                   })}
+                 {pedidos.filter(pedido => pedido.status === 'pronto').length === 0 && (
+                  <div className="card-modern p-6 text-center">
+                    <CheckCircle className="w-12 h-12 mx-auto text-gray-400 mb-3" />
+                    <p className="text-gray-600">
+                      Nenhum pedido pronto
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       )}
