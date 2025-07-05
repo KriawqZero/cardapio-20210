@@ -21,29 +21,58 @@ jobs:
         key: ${{ secrets.SSH_KEY }}
         port: ${{ secrets.PORT || 22 }}
         script: |
+          # Configurar PATH para encontrar yarn e pm2
+          export PATH="$HOME/.npm-global/bin:/usr/local/bin:/usr/bin:/bin:$PATH"
+          
+          # Carregar NVM se existir
+          export NVM_DIR="$HOME/.nvm"
+          [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+          
+          # Ir para diretório do projeto
           mkdir -p $HOME/cardapio-20210
           cd $HOME/cardapio-20210
           
-          # Backup atual (caso dê problema)
-          git stash
+          # Backup atual
+          git stash || echo "Nada para fazer backup"
           
           # Atualizar código
           git pull origin main
           
+          # Verificar se yarn existe
+          if command -v yarn >/dev/null 2>&1; then
+            echo "✅ Yarn encontrado: $(which yarn)"
+            PACKAGE_MANAGER="yarn"
+          elif command -v npm >/dev/null 2>&1; then
+            echo "⚠️ Yarn não encontrado, usando npm"
+            PACKAGE_MANAGER="npm"
+          else
+            echo "❌ Nem yarn nem npm encontrados!"
+            exit 1
+          fi
+          
           # Instalar dependências
-          yarn install --frozen-lockfile
+          if [ "$PACKAGE_MANAGER" = "yarn" ]; then
+            yarn install --frozen-lockfile
+            yarn db:generate
+            yarn db:push
+            yarn build
+          else
+            npm ci
+            npm run db:generate
+            npm run db:push
+            npm run build
+          fi
           
-          # Gerar Prisma Client
-          yarn db:generate
+          # Verificar se PM2 existe e reiniciar
+          if command -v pm2 >/dev/null 2>&1; then
+            echo "✅ PM2 encontrado: $(which pm2)"
+            pm2 restart cardapio-20210 || pm2 start ecosystem.config.js
+            pm2 status
+          else
+            echo "⚠️ PM2 não encontrado, instalando..."
+            npm install -g pm2
+            pm2 start ecosystem.config.js
+            pm2 status
+          fi
           
-          # Sincronizar banco
-          yarn db:push
-          
-          # Build da aplicação
-          yarn build
-          
-          # Reiniciar PM2
-          pm2 restart cardapio-20210 || pm2 start ecosystem.config.js
-          
-          # Mostrar status
-          pm2 status 
+          echo "�� Deploy concluído!" 
