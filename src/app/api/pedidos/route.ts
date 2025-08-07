@@ -7,7 +7,11 @@ export async function GET() {
       include: {
         itens: {
           include: {
-            drink: true
+            itemCardapio: {
+              include: {
+                categoria: true
+              }
+            }
           }
         }
       },
@@ -44,26 +48,32 @@ export async function POST(request: Request) {
       );
     }
     
-    // Verificar se todos os drinks estão disponíveis
-    const drinkIds = [...new Set(itens.map(item => item.drinkId))];
-    const drinks = await prisma.drink.findMany({
+    // Verificar se todos os itens do cardápio estão disponíveis
+    const itemIds = [...new Set(itens.map(item => item.itemCardapioId))];
+    const itensCardapio = await prisma.itemCardapio.findMany({
       where: {
         id: {
-          in: drinkIds
+          in: itemIds
         }
+      },
+      include: {
+        categoria: true
       }
     });
     
-    // Verificar se algum drink está esgotado ou inativo
-    const unavailableDrinks = drinks.filter(drink => !drink.ativo || drink.esgotado);
-    if (unavailableDrinks.length > 0) {
+    // Verificar se algum item não está disponível
+    const unavailableItems = itensCardapio.filter(item => 
+      !item.ativo || !item.disponivel || !item.categoria.ativa || !item.categoria.visivel
+    );
+    
+    if (unavailableItems.length > 0) {
       return NextResponse.json(
         { 
-          error: 'Alguns drinks não estão disponíveis',
-          unavailableDrinks: unavailableDrinks.map(drink => ({
-            id: drink.id,
-            nome: drink.nome,
-            reason: !drink.ativo ? 'inativo' : 'esgotado'
+          error: 'Alguns itens não estão disponíveis',
+          unavailableItems: unavailableItems.map(item => ({
+            id: item.id,
+            nome: item.nome,
+            reason: !item.ativo ? 'inativo' : !item.disponivel ? 'indisponível' : 'categoria inativa'
           }))
         },
         { status: 400 }
@@ -82,17 +92,21 @@ export async function POST(request: Request) {
         status: 'aguardando_pagamento',
         itens: {
           create: itens.map(item => ({
-            drinkId: item.drinkId,
-            volume: item.volume,
+            itemCardapioId: item.itemCardapioId,
             quantidade: item.quantidade,
-            preco: item.preco
+            preco: item.preco,
+            observacao: item.observacao || null
           }))
         }
       },
       include: {
         itens: {
           include: {
-            drink: true
+            itemCardapio: {
+              include: {
+                categoria: true
+              }
+            }
           }
         }
       }

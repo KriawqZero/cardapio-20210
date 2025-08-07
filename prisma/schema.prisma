@@ -1,5 +1,5 @@
-// Schema para Sistema de Gerenciamento de Pedidos - Barraca 20.210
-// Evento Arraiá - IFMS
+// Schema para Sistema de Gerenciamento de Pedidos - Marmitaria
+// Sistema profissional para gerenciamento de cardápio e pedidos
 
 generator client {
   provider = "prisma-client-js"
@@ -10,22 +10,41 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Drink {
+model Categoria {
   id          String   @id @default(cuid())
-  nome        String
+  nome        String   @unique
   descricao   String?
-  imagem      String?
-  ativo       Boolean  @default(true)
-  esgotado    Boolean  @default(false)
-  esgotando   Boolean  @default(false)
-  novidade    Boolean  @default(false)
+  ordem       Int      @default(0)
+  ativa       Boolean  @default(true)
+  visivel     Boolean  @default(true) // Toggle para categoria "Do dia"
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   
-  // Relacionamento com itens do pedido
-  itensPedido ItemPedido[]
+  // Relacionamento com itens do cardápio
+  itens       ItemCardapio[]
   
-  @@map("drinks")
+  @@map("categorias")
+}
+
+model ItemCardapio {
+  id            String   @id @default(cuid())
+  nome          String
+  descricao     String?
+  preco         Float
+  imagem        String?
+  ativo         Boolean  @default(true)
+  disponivel    Boolean  @default(true)
+  destaque      Boolean  @default(false)
+  sugestaoChef  Boolean  @default(false)
+  categoriaId   String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  // Relacionamentos
+  categoria     Categoria @relation(fields: [categoriaId], references: [id])
+  itensPedido   ItemPedido[]
+  
+  @@map("itens_cardapio")
 }
 
 model Pedido {
@@ -33,7 +52,7 @@ model Pedido {
   nomeCliente String
   observacao  String?
   total       Float
-  status      String   @default("aguardando_pagamento") // aguardando_pagamento, ficha_entregue, em_preparo, pronto, entregue
+  status      String   @default("novo") // novo, em_preparo, pronto, entregue
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   
@@ -44,16 +63,16 @@ model Pedido {
 }
 
 model ItemPedido {
-  id         String @id @default(cuid())
-  pedidoId   String
-  drinkId    String
-  volume     Int    // 300, 500, 700 (ml)
-  quantidade Int    @default(1)
-  preco      Float  // R$ 8, 10, 14
+  id              String @id @default(cuid())
+  pedidoId        String
+  itemCardapioId  String
+  quantidade      Int    @default(1)
+  preco           Float  // Preço no momento do pedido
+  observacao      String? // Observações específicas do item
   
   // Relacionamentos
-  pedido     Pedido @relation(fields: [pedidoId], references: [id], onDelete: Cascade)
-  drink      Drink  @relation(fields: [drinkId], references: [id])
+  pedido          Pedido @relation(fields: [pedidoId], references: [id], onDelete: Cascade)
+  itemCardapio    ItemCardapio @relation(fields: [itemCardapioId], references: [id])
   
   @@map("itens_pedido")
 }

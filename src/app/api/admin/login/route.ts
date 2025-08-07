@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 
-const ADMIN_PASSWORD = 'MarcilioLindo123@@@';
+const ADMIN_PASSWORD = 'Demo123';
 
 export async function POST(request: Request) {
   try {

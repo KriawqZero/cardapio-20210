@@ -1,20 +1,20 @@
 @import "tailwindcss";
 
 :root {
-  /* Cores Primárias Modernas */
-  --primary: #2563eb;
-  --primary-dark: #1d4ed8;
-  --primary-light: #3b82f6;
+  /* Paleta de cores profissional para Marmitaria */
+  --primary: #ea580c; /* Laranja/vermelho da marmitaria */
+  --primary-dark: #c2410c;
+  --primary-light: #fb923c;
   
   /* Cores Secundárias */
-  --secondary: #7c3aed;
-  --secondary-dark: #6d28d9;
-  --secondary-light: #8b5cf6;
+  --secondary: #0f172a; /* Cinza escuro profissional */
+  --secondary-dark: #020617;
+  --secondary-light: #334155;
   
   /* Cores de Acento */
-  --accent: #f59e0b;
+  --accent: #fbbf24; /* Amarelo dourado */
   --accent-dark: #d97706;
-  --accent-light: #fbbf24;
+  --accent-light: #fde047;
   
   /* Cores Neutras */
   --background: #f8fafc;
@@ -72,26 +72,30 @@ body {
   min-height: 100vh;
 }
 
-/* Backgrounds modernos */
+/* Backgrounds profissionais para Marmitaria */
 .modern-bg {
-  background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
+  background: linear-gradient(135deg, #ea580c 0%, #c2410c 100%);
 }
 
 .admin-bg {
-  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  background: linear-gradient(135deg, #0f172a 0%, #334155 100%);
 }
 
-/* Botões modernos */
+.marmitaria-gradient {
+  background: linear-gradient(135deg, #fed7aa 0%, #fb923c 50%, #ea580c 100%);
+}
+
+/* Botões profissionais para Marmitaria */
 .btn-primary {
-  @apply bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg shadow-lg transform hover:scale-105 transition-all duration-200 cursor-pointer;
+  @apply bg-orange-600 hover:bg-orange-700 text-white font-semibold py-3 px-6 rounded-lg shadow-lg transform hover:scale-105 transition-all duration-200 cursor-pointer;
 }
 
 .btn-secondary {
-  @apply bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 px-6 rounded-lg shadow-lg transform hover:scale-105 transition-all duration-200 cursor-pointer;
+  @apply bg-slate-700 hover:bg-slate-800 text-white font-semibold py-3 px-6 rounded-lg shadow-lg transform hover:scale-105 transition-all duration-200 cursor-pointer;
 }
 
 .btn-accent {
-  @apply bg-amber-500 hover:bg-amber-600 text-white font-semibold py-3 px-6 rounded-lg shadow-lg transform hover:scale-105 transition-all duration-200 cursor-pointer;
+  @apply bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-3 px-6 rounded-lg shadow-lg transform hover:scale-105 transition-all duration-200 cursor-pointer;
 }
 
 .btn-success {
